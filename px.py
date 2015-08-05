@@ -1,4 +1,5 @@
 from bitstring import BitStream, Bits
+from numbers import Number
 
 class command(object):
 
@@ -26,7 +27,13 @@ class command(object):
 
 	def from_val(self,val):
 
-		val = val.replace(' ','')
+		if len(val) < 32:
+			vals = val.split(' ')
+			val = ''
+			for v in vals:
+				if len(v) < 2:
+					v = '0'+v
+				val += v
 
 		self.header = int(val[4:8],16)
 		self.azrate = decode_azelrate(val[8:12])
@@ -105,7 +112,13 @@ def encode_azelrate(degs):
 	return Bits(int=SRV, length=16)
 
 def decode_azelrate(SRV):
-	SRV = SRV.int
+
+	if isinstance(SRV,str):
+		SRV = Bits(hex=SRV)
+
+	if isinstance(SRV,Bits):
+		SRV = SRV.int
+
 	RRV = 16.0 * (SRV/2.0**15)
 	return RRV
 
@@ -115,7 +128,12 @@ def encode_azpos(deg):
 	return Bits(uint=SAPV, length=24)
 
 def decode_azpos(SAPV):
-	SAPV = SAPV.uint
+	
+	if isinstance(SAPV,str):
+		SAPV = Bits(hex=SAPV)
+
+	if isinstance(SAPV,Bits):
+		SAPV = SAPV.uint
 	RAPV = 180.0 * (SAPV/(2.0**23))
 	return RAPV
 
@@ -128,7 +146,13 @@ def encode_elpos(deg):
 	return Bits(int=SEPV, length=24)
 
 def decode_elpos(SEPV):
-	SEPV = SEPV.int
+	
+	if isinstance(SEPV,str):
+		SEPV=Bits(hex=SEPV)
+
+	if isinstance(SEPV,Bits):
+		SEPV = SEPV.int
+
 	if SEPV > 0:
 		REPV = 360.0 + (180.0*(SEPV/2.0**23))
 	else:
